@@ -12,4 +12,4 @@ class IncidentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Incident
-        fields = ['id', 'text', 'type', 'severity', 'location', 'status', 'created_at', 'resolved_at', 'messages']
+        fields = ['id', 'text', 'type', 'severity', 'location', 'status', 'epe_score', 'epe_reason', 'created_at', 'resolved_at', 'messages']

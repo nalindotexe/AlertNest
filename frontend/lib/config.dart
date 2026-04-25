@@ -6,9 +6,7 @@ class AppConfig {
 
   static String get baseUrl {
     if (kIsWeb) {
-      // In web, we can't easily import 'dart:html' here without conditional imports,
-      // but we can assume the same origin if hosted, or localhost if dev.
-      return ''; // Empty means relative path for web
+      return 'http://localhost:8000'; // Default for local web dev
     }
     // For Android, 10.0.2.2 is usually the host machine in emulator.
     // However, for a real device, we need the actual local IP.

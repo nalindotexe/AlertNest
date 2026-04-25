@@ -13,55 +13,9 @@ from .utils import classify_incident, extract_location
 
 class IncidentListView(APIView):
     def get(self, request):
-        incidents = list(Incident.objects.filter(status='ACTIVE'))
-        
-        if not incidents:
-            return Response([])
-            
-        # 1. Prepare data for the EPE
-        from .epe import EmergencyPriorityEngine
-        engine = EmergencyPriorityEngine()
-        
-        epe_payload = []
-        for inc in incidents:
-            time_diff = (timezone.now() - inc.created_at).total_seconds() / 60.0
-            epe_payload.append({
-                "id": inc.id,
-                "text": inc.text,
-                "people_affected": 0, # Could be extracted from text later
-                "people_at_risk": 0,
-                "time_reported_mins": max(0, time_diff)
-            })
-            
-        # 2. Run EPE Inference
-        ranked_output = engine.rank_emergencies(epe_payload)
-        ranked_items = ranked_output.get("prioritized_emergencies", [])
-        ranked_ids = [item["id"] for item in ranked_items]
-        
-        # 3. Sort backend models matching EPE rank
-        incident_map = {inc.id: inc for inc in incidents}
-        sorted_incidents = []
-        for r_id in ranked_ids:
-            if r_id in incident_map:
-                sorted_incidents.append(incident_map[r_id])
-                
-        # 4. Fallback for any unranked items
-        for inc in incidents:
-            if inc.id not in ranked_ids:
-                sorted_incidents.append(inc)
-
-        # 5. Serialize and inject EPE data
-        serializer = IncidentSerializer(sorted_incidents, many=True)
-        response_data = serializer.data
-        
-        for item in response_data:
-            for r_item in ranked_items:
-                if r_item["id"] == item["id"]:
-                    item["epe_score"] = r_item["priority_score"]
-                    item["epe_reason"] = r_item["reason"]
-                    break
-                    
-        return Response(response_data)
+        incidents = Incident.objects.filter(status='ACTIVE').order_by('-epe_score', '-created_at')
+        serializer = IncidentSerializer(incidents, many=True)
+        return Response(serializer.data)
 
 class IncidentCreateView(APIView):
     def post(self, request):
@@ -80,6 +34,24 @@ class IncidentCreateView(APIView):
             status="ACTIVE"
         )
         
+        # EPE Scoring at creation time
+        from .epe import EmergencyPriorityEngine
+        engine = EmergencyPriorityEngine()
+        epe_payload = [{
+            "id": incident.id,
+            "text": incident.text,
+            "people_affected": 0,
+            "people_at_risk": 0,
+            "time_reported_mins": 0
+        }]
+        ranked_output = engine.rank_emergencies(epe_payload)
+        prioritized = ranked_output.get("prioritized_emergencies", [])
+        
+        if prioritized:
+            incident.epe_score = prioritized[0].get("priority_score", 0.0)
+            incident.epe_reason = prioritized[0].get("reason", "")
+            incident.save()
+        
         # Broadcast
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -93,7 +65,9 @@ class IncidentCreateView(APIView):
                         "type": incident.type,
                         "severity": incident.severity,
                         "location": incident.location,
-                        "status": incident.status
+                        "status": incident.status,
+                        "epe_score": incident.epe_score,
+                        "epe_reason": incident.epe_reason
                     }
                 }
             }

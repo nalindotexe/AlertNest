@@ -12,6 +12,8 @@ class Incident(models.Model):
     severity = models.CharField(max_length=50) # HIGH, MEDIUM, LOW
     location = models.CharField(max_length=100)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
+    epe_score = models.FloatField(default=0.0)
+    epe_reason = models.CharField(max_length=255, default="")
     created_at = models.DateTimeField(default=timezone.now)
     resolved_at = models.DateTimeField(null=True, blank=True)
 
