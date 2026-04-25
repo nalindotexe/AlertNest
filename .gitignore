@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# lib/  <-- Removed to allow Flutter lib/
+# lib64/ <-- Removed to allow Flutter lib64/
 parts/
 sdist/
 var/
@@ -227,3 +227,8 @@ frontend/macos/Flutter/ephemeral/
 .idea/
 *.iml
 reference/
+
+# Local Dev / SDKs
+android_sdk/
+*.log
+demo.js
