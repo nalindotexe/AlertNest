@@ -1,8 +1,24 @@
 import json
 import random
 
+def get_text_intensity(text):
+    text_lower = text.lower()
+    # Boost severity for high intensity terms
+    if any(w in text_lower for w in [
+        'big', 'huge', 'massive', 'out of control', 'everything', 'burning', 'extreme', 
+        'flames', 'badi', 'dodda', 'periya', 'pedda', 'bhayankara', 'bhayanak'
+    ]):
+        return random.randint(8, 10)
+    # Lower severity for low intensity terms
+    if any(w in text_lower for w in [
+        'small', 'minor', 'little', 'tiny', 'smoke only', 'control', 'choti', 'sanna', 
+        'chinna', 'konchem', 'swalpa'
+    ]):
+        return random.randint(1, 3)
+    return random.randint(4, 7) # Default medium
+
 def calculate_priority(category, severity, people_affected, people_at_risk, time_mins):
-    # Base weight by category mapping identical to utils.py classification output
+    # Base weight by category mapping
     # 0 = FIRE, 1 = MEDICAL, 2 = SECURITY
     base = 0.0
     if category == 0:
@@ -29,12 +45,14 @@ def main():
         
     epe_data = []
     
-    print("Generating randomized EPE features and Priority Targets...")
+    print("Generating Intensity-Correlated EPE features and Priority Targets...")
     for item in raw_data:
-        # Generate 10 variations of data logic for each linguistic sample
-        for _ in range(10):
+        # Generate 5 variations for each linguistic sample (reduced from 10 to focus quality)
+        for _ in range(5):
+            # DETECT INTENSITY FROM TEXT (Crucial fix for priority logic)
+            severity = get_text_intensity(item["text"])
+            
             # Simulate realistic parsed conditions
-            severity = random.randint(1, 10)
             people_affected = random.randint(0, 50)
             people_at_risk = random.randint(0, 100)
             time_reported_mins = random.uniform(0, 120)
@@ -49,7 +67,7 @@ def main():
             
             epe_data.append({
                 "text": item["text"],
-                "nlp_category": item["label"],   # Derived automatically
+                "nlp_category": item["label"],
                 "severity": severity,
                 "people_affected": people_affected,
                 "people_at_risk": people_at_risk,

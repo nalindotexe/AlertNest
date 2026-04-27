@@ -54,6 +54,8 @@ def classify_incident(text: str):
         'agg', 'baah', 'jui', 'dhuwan', 'dhuman', 'flames', 'shola', 
         'benki', 'hachide', 'aagide', 'ಬೆಂಕಿ', 'ಆಗ', 'தீ'
     ]):
+        if any(k in text_lower for k in ['small', 'minor', 'little', 'tiny', 'sanna', 'chota', 'chinna']):
+            return ("FIRE", "MEDIUM")
         return ("FIRE", "HIGH")
         
     # MEDICAL / URGENT CARE
@@ -62,6 +64,8 @@ def classify_incident(text: str):
         'sahayam', 'daktar', 'chikitsa', 'khoon', 'chot', 'behosh', 'faint', 
         'ambulance', 'ಸಹಾಯ', 'உதவி', 'సహాయం'
     ]):
+        if any(k in text_lower for k in ['everything', 'dying', 'extreme', 'unconscious', 'massive']):
+            return ("MEDICAL", "HIGH")
         return ("MEDICAL", "MEDIUM")
 
     # SECURITY / THREATS
@@ -69,6 +73,8 @@ def classify_incident(text: str):
         'police', 'thief', 'robbery', 'weapon', 'intruder', 'chor', 'chakku', 'loot', 
         'badmash', 'stole', 'stolen', 'donga', 'kalla', 'ತಸ್ಮರ'
     ]):
+        if any(k in text_lower for k in ['weapon', 'gun', 'knife', 'chakku', 'massive', 'extreme']):
+            return ("SECURITY", "HIGH")
         return ("SECURITY", "LOW")
 
     # --- PHASE 2: AI CLASSIFICATION (FOR CONTEXTUAL PHRASES) ---

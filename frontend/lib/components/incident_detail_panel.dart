@@ -75,6 +75,15 @@ class IncidentDetailPanel extends StatelessWidget {
     final sevColor   = _sevColor(sev);
     final isResolved = status == 'RESOLVED';
 
+    final createdAtStr = incident['created_at'] as String?;
+    String formattedTime = '22:07';
+    if (createdAtStr != null) {
+      try {
+        final dt = DateTime.parse(createdAtStr).toLocal();
+        formattedTime = '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      } catch (_) {}
+    }
+
     return Container(
       color: kBgDeep,
       child: Column(
@@ -205,7 +214,7 @@ class IncidentDetailPanel extends StatelessWidget {
                                 const Icon(Icons.access_time, size: 10, color: kTextSecond),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '22:07',
+                                  formattedTime,
                                   style: GoogleFonts.exo2(color: kTextSecond, fontSize: 10),
                                 ),
                               ],

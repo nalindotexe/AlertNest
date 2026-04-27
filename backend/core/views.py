@@ -17,6 +17,18 @@ class IncidentListView(APIView):
         serializer = IncidentSerializer(incidents, many=True)
         return Response(serializer.data)
 
+    def delete(self, request):
+        Incident.objects.all().delete()
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "alerts",
+            {
+                "type": "broadcast_event",
+                "payload": {"event": "incidents_cleared"}
+            }
+        )
+        return Response({"success": True})
+
 class IncidentCreateView(APIView):
     def post(self, request):
         text = request.data.get("text", "")

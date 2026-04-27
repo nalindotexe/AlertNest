@@ -84,6 +84,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _clearAllIncidents() async {
+    try {
+      final response = await http.delete(Uri.parse('${AppConfig.baseUrl}/incidents/'));
+      if (response.statusCode == 200) {
+        setState(() {
+          _incidents.clear();
+          _selectedIncident = null;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error clearing: $e');
+    }
+  }
+
   @override
   void dispose() {
     _clockTimer.cancel();
@@ -118,6 +132,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.delete_sweep, size: 20),
+                  color: kSevHigh.withOpacity(0.8),
+                  tooltip: 'Clear All Incidents',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: kBgCard,
+                        title: Text('CLEAR ALL?', style: GoogleFonts.rajdhani(color: kSevHigh, fontWeight: FontWeight.bold)),
+                        content: Text('This will delete all test incidents from the database.', style: GoogleFonts.exo2(color: kTextPrimary)),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCEL')),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              _clearAllIncidents();
+                            },
+                            child: const Text('DELETE', style: TextStyle(color: kSevHigh)),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
