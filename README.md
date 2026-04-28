@@ -1,136 +1,186 @@
-# 🛡️ AlertNest: Integrated Emergency Response MVP
+<div align="center">
 
-A robust, hackathon-ready emergency notification and response system. 
-Features an **AI-driven Django backend** and a **Real-time Flutter Dashboard** with WebSocket synchronization.
+# 🛡️ AlertNest
+### AI-Powered Emergency Notification & Response System
+
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=flat-square&logo=python)](https://python.org)
+[![Django](https://img.shields.io/badge/Django-Channels-green?style=flat-square&logo=django)](https://channels.readthedocs.io/)
+[![Flutter](https://img.shields.io/badge/Flutter-Cross--Platform-02569B?style=flat-square&logo=flutter)](https://flutter.dev)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-Keras-FF6F00?style=flat-square&logo=tensorflow)](https://tensorflow.org)
+[![Status](https://img.shields.io/badge/Status-Hackathon%20MVP-orange?style=flat-square)]()
+
+**AlertNest turns a plain-text emergency report into a classified, prioritized, live-broadcast incident — in milliseconds.**
+
+</div>
+
+---
+
+## 💡 The Problem
+
+Emergency responders waste critical seconds figuring out *what* an incident is and *how urgent* it is. AlertNest eliminates that delay with AI triage and real-time coordination — the moment an alert comes in, every responder knows exactly what to do.
+
+---
+
+## ⚡ Demo Flow
+
+```
+User types: "Smoke coming from the server room on floor 3"
+
+        ↓ NLP Classifier
+
+    Category: 🔥 FIRE
+
+        ↓ Emergency Priority Engine
+
+    Priority Score: 9.2 / 10  →  CRITICAL
+
+        ↓ WebSocket broadcast
+
+    All responder dashboards update instantly ✅
+```
+
+Run it yourself in under 30 seconds:
+```bash
+cd backend && python demo_epe.py
+```
+
+---
+
+## 🧠 AI Engine
+
+AlertNest uses a **dual-model pipeline** — both models are pre-trained and ready to run.
+
+### Model 1 — NLP Classifier (`nlp_model.keras`)
+A TensorFlow/Keras Dense Neural Network that reads free-text reports and outputs an intent category.
+
+| Input Text | Classified As |
+|---|---|
+| `"Smoke in the lobby"` | `🔥 FIRE` |
+| `"Person collapsed near entrance"` | `🚑 MEDICAL` |
+| `"Suspicious individual on floor 3"` | `🔒 SECURITY` |
+
+### Model 2 — Emergency Priority Engine (`epe_model.keras`)
+A dual-input regression model that scores incidents across **severity**, **risk**, and **urgency** — so the most critical alerts always surface first.
+
+> ✅ Pre-trained weights are included. No retraining required to run the system.
 
 ---
 
 ## 🏗️ Architecture
 
-- **Backend (`/backend`)**: Python Django + Django Channels server.
-  - **AI Engine**: TensorFlow/Keras Dense Neural Network for intent and severity classification.
-  - **Database**: Django ORM with SQLite for local persistence.
-  - **Real-time**: WebSockets (via Daphne) for instant incident broadcasting and live chat.
-- **Frontend (`/frontend`)**: Flutter Cross-Platform App.
-  - **Dashboard**: Live feed of active incidents categorized by severity.
-  - **Triage**: Detail view with live team chat and incident resolution.
+```
+AlertNest/
+├── backend/                   # Python Django ASGI server
+│   ├── alertnest/             # Project config & settings
+│   ├── core/                  # WebSocket routing, incident logic
+│   ├── nlp_model.keras        # Pre-trained NLP classifier
+│   ├── epe_model.keras        # Pre-trained Priority Engine
+│   ├── tokenizer.json         # Word index for NLP model
+│   └── demo_epe.py            # Standalone AI demo script
+│
+└── frontend/                  # Flutter cross-platform app
+    └── lib/                   # Dart source & UI components
+```
 
+| Layer | Technology |
+|---|---|
+| Backend | Python Django + Django Channels |
+| AI / ML | TensorFlow / Keras |
+| Real-time | WebSockets (Daphne ASGI) |
+| Database | SQLite via Django ORM |
+| Frontend | Flutter (Android, iOS, Web, Desktop) |
 
 ---
 
 ## 🚀 Getting Started
 
-### 1. Backend Setup (Python / Django)
+### Prerequisites
+- Python 3.8+ (3.12 recommended)
+- Flutter SDK — [Install Guide](https://flutter.dev/docs/get-started/install)
 
-Ensure you have Python 3.8+ installed (3.12 recommended).
+---
+
+### Backend
 
 ```bash
-# Navigate to backend
-cd backend
+git clone https://github.com/nalindotexe/AlertNest.git
+cd AlertNest/backend
 
-# Create and activate virtual environment
+# Set up virtual environment
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate        # Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
-```
 
-#### Environment Variables
-Create a `.env` file in the `backend/` directory by copying the example:
-```bash
+# Configure environment
 cp .env.example .env
-```
-Ensure you fill out any required settings inside `backend/.env`.
 
-
-#### Database Setup
-Run the initial Django migrations to set up the SQLite database:
-```bash
+# Initialize database
 python manage.py migrate
+
+# Start the server
+python manage.py runserver 0.0.0.0:8000
 ```
 
-#### 🧠 AI Models & Priority Engine
-AlertNest utilizes a dual-model AI architecture:
-1.  **NLP Classifier (`nlp_model.keras`)**: Categorizes text intents (FIRE, MEDICAL, SECURITY).
-2.  **Emergency Priority Engine (`epe_model.keras`)**: A dual-input regression model that ranks incidents by severity, risk, and urgency.
+| | URL |
+|---|---|
+| API | `http://127.0.0.1:8000/` |
+| WebSocket | `ws://127.0.0.1:8000/ws/` |
 
-**The repository includes pre-trained weights for both models.** You do **not** need to re-train them unless you modify the training datasets.
+---
 
-#### 🚀 Direct Usage (No Training Required)
-Since pre-trained weights are included, you can start the system immediately:
-1.  **Start the Backend**: `python manage.py runserver` (The models load into memory automatically).
-2.  **Test Inference**: Run `python demo_epe.py` to see the AI prioritize emergencies without any setup.
+### Frontend
 
-**Note:** You only need to run the scripts in the "Optional Training" section below if you want to rebuild the AI logic from scratch.
-
-#### (Optional) Training the Models
-If you wish to update or re-train the models with new data:
-
-**1. Base NLP Classifier:**
 ```bash
-# GPU (Recommended)
-python train_model.py
-# CPU Fallback
-python train_model_cpu.py
+cd AlertNest/frontend
+
+flutter pub get
+flutter run                     # Device / emulator
+flutter run -d chrome           # Web browser
 ```
 
-**2. Emergency Priority Engine (EPE):**
+**Linux Desktop (first time only):**
 ```bash
-# Generate synthetic priority data first
+flutter config --enable-linux-desktop
+sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+flutter run -d linux
+```
+
+---
+
+## ✨ Key Features
+
+| Feature | Detail |
+|---|---|
+| 🤖 Instant AI Triage | Free-text → classified type + priority score in one pipeline call |
+| 📡 Live Dashboard | WebSocket-powered — zero page refresh, zero delay |
+| 🎯 Smart Prioritization | Regression model ranks by severity, risk & urgency |
+| ✅ One-Click Resolve | Clears the incident from every connected responder screen simultaneously |
+| 🌐 Cross-Platform | Flutter runs on Android, iOS, Web, and Linux Desktop |
+| 👥 Dual Role System | Separate flows for guests (reporting) and staff (triage & response) |
+| 💬 Live Team Chat | Per-incident team channel synced via WebSocket |
+
+---
+
+## 🔁 Retraining the Models *(Optional)*
+
+Only needed if you want to rebuild the AI from scratch with new data.
+
+```bash
+# 1. Retrain NLP Classifier
+python train_model.py           # GPU
+python train_model_cpu.py       # CPU fallback
+
+# 2. Generate synthetic EPE training data
 python generate_epe_data.py
-# Train the EPE regression model
+
+# 3. Retrain Emergency Priority Engine
 python train_epe.py
 ```
 
-#### Run the Server
-Start the Django ASGI development server (so WebSockets and HTTP requests work simultaneously):
-```bash
-python manage.py runserver 0.0.0.0:8000
-```
-- **API Base**: `http://127.0.0.1:8000/`
-- **Websocket**: `ws://127.0.0.1:8000/ws/`
-- **Tandem Model Demo**: Run `python demo_epe.py` to see the **NLP Classifer** and **Priority Engine** work in tandem—the output will show both the incident type and its priority score in a single ranked JSON payload.
-
 ---
 
-### 2. Frontend Setup (Flutter)
-
-In a new terminal, ensure you have the [Flutter SDK](https://docs.flutter.dev/get-started/install) installed.
-
-```bash
-# Navigate to frontend
-cd frontend
-
-# Fetch dependencies
-flutter pub get
-
-# (Linux Users Only) Enable Desktop Support if testing natively
-flutter config --enable-linux-desktop
-sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
-```
-
-#### Launch the UI
-You can run the app on your connected device, emulator, or as a native desktop/web app:
-```bash
-flutter run
-```
-
-*(If testing web compatibility, you can serve using `flutter run -d web-server` or `flutter run -d chrome`)*
-
----
-
-## 🛠️ Key Hackathon Features
-
-1.  **Smart AI Classification**: Text input like *"Smoke in the lobby"* ➔ Categorized as **[FIRE] - HIGH SEVERITY** instantly via TensorFlow.
-2.  **Live Desk**: The dashboard updates instantly via WebSockets without refreshing.
-3.  **One-Click Resolve**: Responding to an incident clears it from all connected responder screens in real-time.
-
----
-
-## 📁 Repository Structure
-- `backend/`: Django project (`alertnest`), Channels WebSocket routing (`core`), models, and TensorFlow model scripts.
-- `frontend/`: Flutter source code, UI components, and platform runners.
-- `backend/tokenizer.json`: Word index mapping for the AI engine.
-- `backend/nlp_model.keras`: Base classifier weights.
-- `backend/epe_model.keras`: Emergency Priority Engine weights (fully trained).
+<div align="center">
+  <sub>Built for rapid emergency response · Hackathon MVP</sub>
+</div>
